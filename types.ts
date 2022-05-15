@@ -160,10 +160,17 @@ export interface DeployOptionsBase extends TxOptions {
 
 export interface DeployOptions extends DeployOptionsBase {
   deterministicDeployment?: boolean | string;
+  customDeterministicDeployment?: boolean;
+  deterministicDeployerAddress?: string;
+  deterministicDeploymentSalt?: string;
+  deterministicDeploymentDeployCode?: string;
 }
 
 export interface Create2DeployOptions extends DeployOptionsBase {
   salt?: string;
+  deployerAddress?: string;
+  saltHash?: string;
+  deployCode?: string;
 }
 
 export interface CallOptions {
@@ -218,6 +225,14 @@ export interface DeploymentsExtension {
     deploy(name: string, options: DiamondOptions): Promise<DeployResult>;
   };
   deterministic( // return the determinsitic address as well as a function to deploy the contract, can pass the `salt` field in the option to use different salt
+    name: string,
+    options: Create2DeployOptions
+  ): Promise<{
+    address: Address;
+    implementationAddress?: Address;
+    deploy(): Promise<DeployResult>;
+  }>;
+  deterministicCustom( // return the determinsitic address as well as a function to deploy the contract, can pass the `salt` field in the option to use different salt
     name: string,
     options: Create2DeployOptions
   ): Promise<{

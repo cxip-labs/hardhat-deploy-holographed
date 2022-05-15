@@ -582,7 +582,27 @@ export function addHelpers(
     const unsignedTx = factory.getDeployTransaction(...args, overrides);
 
     let create2Address;
-    if (options.deterministicDeployment) {
+    if (options.customDeterministicDeployment) {
+      if (network.zksync) {
+        throw new Error(
+          'deterministic zk deployments are  not supported at this time'
+        );
+      }
+      if (typeof unsignedTx.data === 'string') {
+        const create2DeployerAddress: string = options.deterministicDeployerAddress || '';
+        const create2Salt: string = options.deterministicDeploymentSalt || '';
+        create2Address = getCreate2Address(
+          create2DeployerAddress,
+          create2Salt,
+          unsignedTx.data
+        );
+        unsignedTx.to = create2DeployerAddress;
+
+        unsignedTx.data = options.deterministicDeploymentDeployCode;
+      } else {
+        throw new Error('unsigned tx data as bytes not supported');
+      }
+    } else if (options.deterministicDeployment) {
       if (network.zksync) {
         throw new Error(
           'deterministic zk deployments are  not supported at this time'
@@ -681,6 +701,73 @@ export function addHelpers(
       address,
       newlyDeployed: true,
     };
+  }
+
+  async function deterministicCustom(
+    name: string,
+    options: Create2DeployOptions
+  ): Promise<{
+    address: Address;
+    implementationAddress?: Address;
+    deploy: () => Promise<DeployResult>;
+  }> {
+    options = {...options}; // ensure no change
+    await init();
+
+    const deployFunction = () =>
+      deploy(name, {
+        ...options,
+        deterministicDeployment: true,
+        customDeterministicDeployment: true,
+        deterministicDeployerAddress: options.deployerAddress,
+        deterministicDeploymentSalt: options.saltHash,
+        deterministicDeploymentDeployCode: options.deployCode,
+      });
+    const args: any[] = options.args ? [...options.args] : [];
+    const {ethersSigner, unknown, address: from} = getFrom(options.from);
+
+    const artifactInfo = await getArtifactFromOptions(name, options);
+    const {artifact} = artifactInfo;
+    const abi = artifact.abi;
+    const byteCode = linkLibraries(artifact, options.libraries);
+    const factory = new ContractFactory(abi, byteCode, ethersSigner);
+
+    const numArguments = factory.interface.deploy.inputs.length;
+    if (args.length !== numArguments) {
+      throw new Error(
+        `expected ${numArguments} constructor arguments, got ${args.length}`
+      );
+    }
+
+    const unsignedTx = factory.getDeployTransaction(...args);
+
+    if (unknown) {
+      throw new UnknownSignerError({
+        from,
+        ...JSON.parse(JSON.stringify(unsignedTx)),
+      });
+    }
+
+    if (typeof unsignedTx.data !== 'string') {
+      throw new Error('unsigned tx data as bytes not supported');
+    } else {
+      return {
+        address: getCreate2Address(
+          options.deployerAddress || '',
+          options.saltHash || '',
+          unsignedTx.data
+        ),
+        deploy: () =>
+          deploy(name, {
+            ...options,
+            deterministicDeployment: true,
+            customDeterministicDeployment: true,
+            deterministicDeployerAddress: options.deployerAddress,
+            deterministicDeploymentSalt: options.saltHash,
+            deterministicDeploymentDeployCode: options.deployCode,
+        }),
+      };
+    }
   }
 
   async function deterministic(
@@ -2783,6 +2870,7 @@ data: ${data}
     rawTx,
     read,
     deterministic,
+    deterministicCustom
   };
 
   const utils = {
