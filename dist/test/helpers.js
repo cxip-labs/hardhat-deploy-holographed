@@ -13,7 +13,7 @@ function useEnvironment(fixtureProjectName, networkName = 'localhost') {
         this.env = require('hardhat');
     });
     afterEach('Resetting hardhat', function () {
-        (0, plugins_testing_1.resetHardhatContext)();
+        plugins_testing_1.resetHardhatContext();
     });
 }
 exports.useEnvironment = useEnvironment;

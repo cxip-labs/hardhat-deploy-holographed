@@ -1,11 +1,7 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -119,7 +115,7 @@ function linkRawLibrary(bytecode, libraryName, libraryAddress) {
         encodedLibraryName = libraryName.slice(1, libraryName.length - 1);
     }
     else {
-        encodedLibraryName = (0, solidity_1.keccak256)(['string'], [libraryName]).slice(2, 36);
+        encodedLibraryName = solidity_1.keccak256(['string'], [libraryName]).slice(2, 36);
     }
     const pattern = new RegExp(`_+\\$${encodedLibraryName}\\$_+`, 'g');
     if (!pattern.exec(bytecode)) {
@@ -245,9 +241,9 @@ getArtifact, saveDeployment, willSaveToDisk, onPendingTx, getGasPrice, log, prin
         }
     }
     function getCreate2Address(create2DeployerAddress, salt, bytecode) {
-        return (0, address_1.getAddress)('0x' +
-            (0, solidity_1.keccak256)(['bytes'], [
-                `0xff${create2DeployerAddress.slice(2)}${salt.slice(2)}${(0, solidity_1.keccak256)(['bytes'], [bytecode]).slice(2)}`,
+        return address_1.getAddress('0x' +
+            solidity_1.keccak256(['bytes'], [
+                `0xff${create2DeployerAddress.slice(2)}${salt.slice(2)}${solidity_1.keccak256(['bytes'], [bytecode]).slice(2)}`,
             ]).slice(-40));
     }
     async function ensureCreate2DeployerReady(options) {
@@ -375,7 +371,7 @@ getArtifact, saveDeployment, willSaveToDisk, onPendingTx, getGasPrice, log, prin
             if (typeof unsignedTx.data === 'string') {
                 const create2DeployerAddress = await ensureCreate2DeployerReady(options);
                 const create2Salt = typeof options.deterministicDeployment === 'string'
-                    ? (0, bytes_1.hexlify)((0, bytes_1.zeroPad)(options.deterministicDeployment, 32))
+                    ? bytes_1.hexlify(bytes_1.zeroPad(options.deterministicDeployment, 32))
                     : '0x0000000000000000000000000000000000000000000000000000000000000000';
                 create2Address = getCreate2Address(create2DeployerAddress, create2Salt, unsignedTx.data);
                 unsignedTx.to = create2DeployerAddress;
@@ -428,7 +424,7 @@ getArtifact, saveDeployment, willSaveToDisk, onPendingTx, getGasPrice, log, prin
     async function deterministicCustom(name, options) {
         options = Object.assign({}, options); // ensure no change
         await init();
-        const deployFunction = () => deploy(name, Object.assign(Object.assign({}, options), { deterministicDeployment: true, customDeterministicDeployment: true, deterministicDeployerAddress: options.deployerAddress, deterministicDeploymentSalt: options.saltHash, deterministicDeploymentDeployCode: options.deployCode }));
+        const deployFunction = () => _deployOne(name, Object.assign(Object.assign({}, options), { deterministicDeployment: true, customDeterministicDeployment: true, deterministicDeployerAddress: options.deployerAddress, deterministicDeploymentSalt: options.saltHash, deterministicDeploymentDeployCode: options.deployCode }), true);
         const args = options.args ? [...options.args] : [];
         const { ethersSigner, unknown, address: from } = getFrom(options.from);
         const artifactInfo = await getArtifactFromOptions(name, options);
@@ -450,7 +446,7 @@ getArtifact, saveDeployment, willSaveToDisk, onPendingTx, getGasPrice, log, prin
         else {
             return {
                 address: getCreate2Address(options.deployerAddress || '', options.saltHash || '', unsignedTx.data),
-                deploy: () => deploy(name, Object.assign(Object.assign({}, options), { deterministicDeployment: true, customDeterministicDeployment: true, deterministicDeployerAddress: options.deployerAddress, deterministicDeploymentSalt: options.saltHash, deterministicDeploymentDeployCode: options.deployCode })),
+                deploy: deployFunction,
             };
         }
     }
@@ -533,7 +529,7 @@ getArtifact, saveDeployment, willSaveToDisk, onPendingTx, getGasPrice, log, prin
             else {
                 return {
                     address: getCreate2Address(await deploymentManager.getDeterministicDeploymentFactoryAddress(), options.salt
-                        ? (0, bytes_1.hexlify)((0, bytes_1.zeroPad)(options.salt, 32))
+                        ? bytes_1.hexlify(bytes_1.zeroPad(options.salt, 32))
                         : '0x0000000000000000000000000000000000000000000000000000000000000000', unsignedTx.data),
                     deploy: () => deploy(name, Object.assign(Object.assign({}, options), { deterministicDeployment: options.salt || true })),
                 };
@@ -577,11 +573,11 @@ getArtifact, saveDeployment, willSaveToDisk, onPendingTx, getGasPrice, log, prin
             }
             const unsignedTx = factory.getDeployTransaction(...argArray);
             if (typeof unsignedTx.data === 'string') {
-                const create2Salt = typeof options.deterministicDeployment === 'string'
-                    ? (0, bytes_1.hexlify)((0, bytes_1.zeroPad)(options.deterministicDeployment, 32))
-                    : '0x0000000000000000000000000000000000000000000000000000000000000000';
-                const create2DeployerAddress = await deploymentManager.getDeterministicDeploymentFactoryAddress();
+                const create2Salt = options.deterministicDeploymentSalt || '';
+                const create2DeployerAddress = options.deterministicDeployerAddress || '';
                 const create2Address = getCreate2Address(create2DeployerAddress, create2Salt, unsignedTx.data);
+                unsignedTx.to = create2DeployerAddress;
+                unsignedTx.data = options.deterministicDeploymentDeployCode;
                 const code = await provider.getCode(create2Address);
                 if (code === '0x') {
                     return { differences: true, address: undefined };
@@ -628,8 +624,8 @@ getArtifact, saveDeployment, willSaveToDisk, onPendingTx, getGasPrice, log, prin
                     });
                     const newData = (_a = newTransaction.data) === null || _a === void 0 ? void 0 : _a.toString();
                     const deserialize = zk.utils.parseTransaction(transaction.data);
-                    const desFlattened = (0, bytes_1.hexConcat)(deserialize.customData.factoryDeps);
-                    const newFlattened = (0, bytes_1.hexConcat)(factoryDeps);
+                    const desFlattened = bytes_1.hexConcat(deserialize.customData.factoryDeps);
+                    const newFlattened = bytes_1.hexConcat(factoryDeps);
                     if (deserialize.data !== newData || desFlattened != newFlattened) {
                         return { differences: true, address: deployment.address };
                     }
@@ -862,7 +858,7 @@ getArtifact, saveDeployment, willSaveToDisk, onPendingTx, getGasPrice, log, prin
         const { artifact } = await getArtifactFromOptions(name, implementationOptions);
         const proxyContractConstructor = proxyContract.abi.find((v) => v.type === 'constructor');
         // ensure no clash
-        const mergedABI = (0, utils_1.mergeABIs)([proxyContract.abi, artifact.abi], {
+        const mergedABI = utils_1.mergeABIs([proxyContract.abi, artifact.abi], {
             check: checkABIConflict,
             skipSupportsInterface: true, // TODO options for custom proxy ?
         }).filter((v) => v.type !== 'constructor');
@@ -1034,7 +1030,7 @@ Note that in this case, the contract deployment will not behave the same if depl
             }
             else {
                 const ownerStorage = await provider.getStorageAt(proxy.address, '0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103');
-                const currentOwner = (0, address_1.getAddress)(`0x${ownerStorage.substr(-40)}`);
+                const currentOwner = address_1.getAddress(`0x${ownerStorage.substr(-40)}`);
                 const oldProxy = proxy.abi.find((frag) => frag.name === 'changeImplementation');
                 const changeImplementationMethod = oldProxy
                     ? 'changeImplementation'
@@ -1335,7 +1331,7 @@ Note that in this case, the contract deployment will not behave the same if depl
                 // reset args for case where facet do not expect any and there was no specific args set on it
                 facetArgs = [];
             }
-            abi = (0, utils_1.mergeABIs)([abi, artifact.abi], {
+            abi = utils_1.mergeABIs([abi, artifact.abi], {
                 check: true,
                 skipSupportsInterface: false,
             });
@@ -2010,10 +2006,10 @@ data: ${data}
                 const txData = pendingTxs[txHash];
                 if (txData.rawTx || txData.decoded) {
                     if (txData.rawTx) {
-                        tx = (0, transactions_1.parse)(txData.rawTx);
+                        tx = transactions_1.parse(txData.rawTx);
                     }
                     else {
-                        tx = (0, utils_1.recode)(txData.decoded);
+                        tx = utils_1.recode(txData.decoded);
                     }
                     // alternative add options to deploy task to delete pending tx, combined with --gasprice this would work (except for timing edge case)
                 }
@@ -2334,7 +2330,7 @@ data: ${data}
                 // reset args for case where facet do not expect any and there was no specific args set on it
                 facetArgs = [];
             }
-            abi = (0, utils_1.mergeABIs)([abi, artifact.abi], {
+            abi = utils_1.mergeABIs([abi, artifact.abi], {
                 check: true,
                 skipSupportsInterface: false,
             });

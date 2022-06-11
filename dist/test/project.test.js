@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = require("chai");
 const helpers_1 = require("./helpers");
 describe('hardhat-deploy hre extension', function () {
-    (0, helpers_1.useEnvironment)('hardhat-project', 'hardhat');
+    helpers_1.useEnvironment('hardhat-project', 'hardhat');
     it('It should add the deployments field', function () {
         chai_1.assert.isNotNull(this.env.deployments);
     });

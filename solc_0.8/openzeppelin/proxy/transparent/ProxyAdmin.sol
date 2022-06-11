@@ -11,8 +11,7 @@ import "../../access/Ownable.sol";
  * explanation of why you would want to use this see the documentation for {TransparentUpgradeableProxy}.
  */
 contract ProxyAdmin is Ownable {
-
-    constructor (address initialOwner) Ownable(initialOwner) {}
+    constructor(address initialOwner) Ownable(initialOwner) {}
 
     /**
      * @dev Returns the current implementation of `proxy`.

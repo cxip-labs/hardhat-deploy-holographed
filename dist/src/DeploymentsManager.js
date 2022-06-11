@@ -8,7 +8,7 @@ const fs_extra_1 = __importDefault(require("fs-extra"));
 const path_1 = __importDefault(require("path"));
 const bignumber_1 = require("@ethersproject/bignumber");
 const debug_1 = __importDefault(require("debug"));
-const log = (0, debug_1.default)('hardhat:wighawag:hardhat-deploy');
+const log = debug_1.default('hardhat:wighawag:hardhat-deploy');
 const utils_1 = require("./utils");
 const helpers_1 = require("./helpers");
 const globalStore_1 = require("./globalStore");
@@ -78,20 +78,20 @@ class DeploymentsManager {
             },
             getArtifact: async (contractName) => {
                 if (this.db.onlyArtifacts) {
-                    const artifactFromFolder = await (0, utils_1.getArtifactFromFolders)(contractName, this.db.onlyArtifacts);
+                    const artifactFromFolder = await utils_1.getArtifactFromFolders(contractName, this.db.onlyArtifacts);
                     if (!artifactFromFolder) {
                         throw new Error(`cannot find artifact "${contractName}" from folder ${this.db.onlyArtifacts}`);
                     }
                     return artifactFromFolder;
                 }
-                let artifact = await (0, utils_1.getArtifactFromFolders)(contractName, [
+                let artifact = await utils_1.getArtifactFromFolders(contractName, [
                     this.env.config.paths.artifacts,
                 ]);
                 if (artifact) {
                     return artifact;
                 }
                 const importPaths = this.getImportPaths();
-                artifact = await (0, utils_1.getArtifactFromFolders)(contractName, importPaths);
+                artifact = await utils_1.getArtifactFromFolders(contractName, importPaths);
                 if (!artifact) {
                     throw new Error(`cannot find artifact "${contractName}"`);
                 }
@@ -99,20 +99,20 @@ class DeploymentsManager {
             },
             getExtendedArtifact: async (contractName) => {
                 if (this.db.onlyArtifacts) {
-                    const artifactFromFolder = await (0, utils_1.getExtendedArtifactFromFolders)(contractName, this.db.onlyArtifacts);
+                    const artifactFromFolder = await utils_1.getExtendedArtifactFromFolders(contractName, this.db.onlyArtifacts);
                     if (!artifactFromFolder) {
                         throw new Error(`cannot find artifact "${contractName}" from folder ${this.db.onlyArtifacts}`);
                     }
                     return artifactFromFolder;
                 }
-                let artifact = await (0, utils_1.getExtendedArtifactFromFolders)(contractName, [
+                let artifact = await utils_1.getExtendedArtifactFromFolders(contractName, [
                     this.env.config.paths.artifacts,
                 ]);
                 if (artifact) {
                     return artifact;
                 }
                 const importPaths = this.getImportPaths();
-                artifact = await (0, utils_1.getExtendedArtifactFromFolders)(contractName, importPaths);
+                artifact = await utils_1.getExtendedArtifactFromFolders(contractName, importPaths);
                 if (artifact) {
                     return artifact;
                 }
@@ -214,7 +214,7 @@ class DeploymentsManager {
             }
         };
         log('adding helpers');
-        const helpers = (0, helpers_1.addHelpers)(this, this.partialExtension, this.network, this.partialExtension.getArtifact, async (name, deployment, artifactName) => {
+        const helpers = helpers_1.addHelpers(this, this.partialExtension, this.network, this.partialExtension.getArtifact, async (name, deployment, artifactName) => {
             if (artifactName &&
                 this.db.writeDeploymentsToFiles &&
                 this.network.saveDeployments) {
@@ -401,14 +401,14 @@ class DeploymentsManager {
         this.db.migrations = migrations;
         // console.log({ migrations: this.db.migrations });
         const networkName = this.getDeploymentNetworkName();
-        (0, utils_1.addDeployments)(this.db, this.deploymentsPath, this.deploymentFolder(), networkName === this.network.name ? chainId : undefined // fork mode, we do not care about chainId ?
+        utils_1.addDeployments(this.db, this.deploymentsPath, this.deploymentFolder(), networkName === this.network.name ? chainId : undefined // fork mode, we do not care about chainId ?
         );
         const extraDeploymentPaths = this.env.config.external &&
             this.env.config.external.deployments &&
             this.env.config.external.deployments[networkName];
         if (extraDeploymentPaths) {
             for (const deploymentFolderPath of extraDeploymentPaths) {
-                (0, utils_1.addDeployments)(this.db, deploymentFolderPath, '', undefined, chainId);
+                utils_1.addDeployments(this.db, deploymentFolderPath, '', undefined, chainId);
             }
         }
         this.db.deploymentsLoaded = true;
@@ -416,7 +416,7 @@ class DeploymentsManager {
     }
     async deletePreviousDeployments(folderPath) {
         folderPath = folderPath || this.deploymentFolder();
-        (0, utils_1.deleteDeployments)(this.deploymentsPath, folderPath);
+        utils_1.deleteDeployments(this.deploymentsPath, folderPath);
     }
     getSolcInputPath() {
         return path_1.default.join(this.deploymentsPath, this.deploymentFolder(), 'solcInputs');
@@ -572,7 +572,7 @@ class DeploymentsManager {
         if (obj.address === undefined && obj.transactionHash !== undefined) {
             let receiptFetched;
             try {
-                receiptFetched = await (0, helpers_1.waitForTx)(this.network.provider, obj.transactionHash, true);
+                receiptFetched = await helpers_1.waitForTx(this.network.provider, obj.transactionHash, true);
                 // TODO add receipt ?
                 obj.address = receiptFetched.contractAddress;
                 if (!obj.address) {
@@ -694,7 +694,7 @@ class DeploymentsManager {
                 }
             }
         }
-        const deployPaths = (0, utils_1.getDeployPaths)(this.network);
+        const deployPaths = utils_1.getDeployPaths(this.network);
         await this.executeDeployScripts(deployPaths, tags);
         await this.export(options);
         return this.db.deployments;
@@ -705,7 +705,7 @@ class DeploymentsManager {
         // This is currently posing problem for network like optimism which require a different set of artifact and hardhat currently only expose one set at a time
         let filepaths;
         try {
-            filepaths = (0, utils_1.traverseMultipleDirectory)(deployScriptsPaths);
+            filepaths = utils_1.traverseMultipleDirectory(deployScriptsPaths);
         }
         catch (e) {
             return;
@@ -899,7 +899,7 @@ class DeploymentsManager {
         }
         if (options.exportAll !== undefined) {
             log('load all deployments for export-all');
-            const all = (0, utils_1.loadAllDeployments)(this.env, this.deploymentsPath, true, this.env.config.external && this.env.config.external.deployments);
+            const all = utils_1.loadAllDeployments(this.env, this.deploymentsPath, true, this.env.config.external && this.env.config.external.deployments);
             const currentNetworkDeployments = {};
             const currentDeployments = this.db.deployments;
             for (const contractName of Object.keys(currentDeployments)) {
@@ -1039,13 +1039,13 @@ class DeploymentsManager {
         this.impersonateUnknownAccounts = false;
     }
     getNetworkName() {
-        return (0, utils_1.getNetworkName)(this.network);
+        return utils_1.getNetworkName(this.network);
     }
     getDeploymentNetworkName() {
         if (this.db.runAsNode) {
             return 'localhost';
         }
-        return (0, utils_1.getNetworkName)(this.network);
+        return utils_1.getNetworkName(this.network);
     }
     deploymentFolder() {
         return this.getDeploymentNetworkName();
@@ -1071,7 +1071,7 @@ class DeploymentsManager {
         if (!this.db.accountsLoaded) {
             const chainId = await this.getChainId();
             const accounts = await this.network.provider.send('eth_accounts');
-            const { namedAccounts, unnamedAccounts, unknownAccounts, addressesToProtocol, } = (0, utils_1.processNamedAccounts)(this.network, this.env.config.namedAccounts, accounts, chainId); // TODO pass in network name
+            const { namedAccounts, unnamedAccounts, unknownAccounts, addressesToProtocol, } = utils_1.processNamedAccounts(this.network, this.env.config.namedAccounts, accounts, chainId); // TODO pass in network name
             await this.impersonateAccounts(unknownAccounts);
             this.db.namedAccounts = namedAccounts;
             this.db.unnamedAccounts = unnamedAccounts;

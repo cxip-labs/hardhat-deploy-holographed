@@ -23,12 +23,13 @@ contract Diamantaire {
 
         functionSelectors = new bytes4[](1);
         functionSelectors[0] = DiamondCutFacet.diamondCut.selector;
-        builtinDiamondCut.push(IDiamondCut.FacetCut({
-            facetAddress:address(diamondCutFacet),
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: functionSelectors
-        }));
-
+        builtinDiamondCut.push(
+            IDiamondCut.FacetCut({
+                facetAddress: address(diamondCutFacet),
+                action: IDiamondCut.FacetCutAction.Add,
+                functionSelectors: functionSelectors
+            })
+        );
 
         // -------------------------------------------------------------------------
         // adding diamond loupe functions
@@ -41,12 +42,13 @@ contract Diamantaire {
         functionSelectors[2] = DiamondLoupeFacet.facetAddress.selector;
         functionSelectors[3] = DiamondLoupeFacet.facetAddresses.selector;
         functionSelectors[4] = DiamondLoupeFacet.supportsInterface.selector;
-        builtinDiamondCut.push(IDiamondCut.FacetCut({
-            facetAddress:address(diamondLoupeFacet),
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: functionSelectors
-        }));
-
+        builtinDiamondCut.push(
+            IDiamondCut.FacetCut({
+                facetAddress: address(diamondLoupeFacet),
+                action: IDiamondCut.FacetCutAction.Add,
+                functionSelectors: functionSelectors
+            })
+        );
 
         // -------------------------------------------------------------------------
         // adding ownership functions
@@ -56,11 +58,13 @@ contract Diamantaire {
         functionSelectors = new bytes4[](2);
         functionSelectors[0] = OwnershipFacet.transferOwnership.selector;
         functionSelectors[1] = OwnershipFacet.owner.selector;
-        builtinDiamondCut.push(IDiamondCut.FacetCut({
-            facetAddress:address(ownershipFacet),
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: functionSelectors
-        }));
+        builtinDiamondCut.push(
+            IDiamondCut.FacetCut({
+                facetAddress: address(ownershipFacet),
+                action: IDiamondCut.FacetCutAction.Add,
+                functionSelectors: functionSelectors
+            })
+        );
     }
 
     function createDiamond(
@@ -71,12 +75,9 @@ contract Diamantaire {
     ) external payable returns (Diamond diamond) {
         if (salt != 0x0000000000000000000000000000000000000000000000000000000000000000) {
             salt = keccak256(abi.encodePacked(salt, owner));
-            diamond = new Diamond{value: msg.value, salt: salt}(
-                builtinDiamondCut,
-                Diamond.DiamondArgs({owner:address(this)})
-            );
+            diamond = new Diamond{value: msg.value, salt: salt}(builtinDiamondCut, Diamond.DiamondArgs({owner: address(this)}));
         } else {
-            diamond = new Diamond{value: msg.value}(builtinDiamondCut, Diamond.DiamondArgs({owner:address(this)}));
+            diamond = new Diamond{value: msg.value}(builtinDiamondCut, Diamond.DiamondArgs({owner: address(this)}));
         }
         emit DiamondCreated(diamond);
 

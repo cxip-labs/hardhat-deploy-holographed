@@ -589,7 +589,8 @@ export function addHelpers(
         );
       }
       if (typeof unsignedTx.data === 'string') {
-        const create2DeployerAddress: string = options.deterministicDeployerAddress || '';
+        const create2DeployerAddress: string =
+          options.deterministicDeployerAddress || '';
         const create2Salt: string = options.deterministicDeploymentSalt || '';
         create2Address = getCreate2Address(
           create2DeployerAddress,
@@ -713,16 +714,15 @@ export function addHelpers(
   }> {
     options = {...options}; // ensure no change
     await init();
-
     const deployFunction = () =>
-      deploy(name, {
+      _deployOne(name, {
         ...options,
         deterministicDeployment: true,
         customDeterministicDeployment: true,
         deterministicDeployerAddress: options.deployerAddress,
         deterministicDeploymentSalt: options.saltHash,
         deterministicDeploymentDeployCode: options.deployCode,
-      });
+      }, true);
     const args: any[] = options.args ? [...options.args] : [];
     const {ethersSigner, unknown, address: from} = getFrom(options.from);
 
@@ -757,15 +757,7 @@ export function addHelpers(
           options.saltHash || '',
           unsignedTx.data
         ),
-        deploy: () =>
-          deploy(name, {
-            ...options,
-            deterministicDeployment: true,
-            customDeterministicDeployment: true,
-            deterministicDeployerAddress: options.deployerAddress,
-            deterministicDeploymentSalt: options.saltHash,
-            deterministicDeploymentDeployCode: options.deployCode,
-        }),
+        deploy: deployFunction,
       };
     }
   }
@@ -975,17 +967,16 @@ export function addHelpers(
 
       const unsignedTx = factory.getDeployTransaction(...argArray);
       if (typeof unsignedTx.data === 'string') {
-        const create2Salt =
-          typeof options.deterministicDeployment === 'string'
-            ? hexlify(zeroPad(options.deterministicDeployment, 32))
-            : '0x0000000000000000000000000000000000000000000000000000000000000000';
-        const create2DeployerAddress =
-          await deploymentManager.getDeterministicDeploymentFactoryAddress();
+        const create2Salt: string = options.deterministicDeploymentSalt || '';
+        const create2DeployerAddress: string =
+          options.deterministicDeployerAddress || '';
         const create2Address = getCreate2Address(
           create2DeployerAddress,
           create2Salt,
           unsignedTx.data
         );
+        unsignedTx.to = create2DeployerAddress;
+        unsignedTx.data = options.deterministicDeploymentDeployCode;
         const code = await provider.getCode(create2Address);
         if (code === '0x') {
           return {differences: true, address: undefined};
@@ -2870,7 +2861,7 @@ data: ${data}
     rawTx,
     read,
     deterministic,
-    deterministicCustom
+    deterministicCustom,
   };
 
   const utils = {

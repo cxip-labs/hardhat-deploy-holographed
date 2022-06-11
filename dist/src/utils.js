@@ -1,11 +1,7 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -95,7 +91,7 @@ async function getExtendedArtifactFromFolders(name, folderPaths) {
             const buildInfo = await artifacts.getBuildInfo(fullyQualifiedName);
             if (buildInfo) {
                 const solcInput = JSON.stringify(buildInfo.input, null, '  ');
-                const solcInputHash = Buffer.from((0, murmur_128_1.default)(solcInput)).toString('hex');
+                const solcInputHash = Buffer.from(murmur_128_1.default(solcInput)).toString('hex');
                 artifact = Object.assign(Object.assign(Object.assign({}, hardhatArtifact), buildInfo.output.contracts[hardhatArtifact.sourceName][contractName]), { solcInput,
                     solcInputHash });
             }
@@ -183,7 +179,7 @@ function loadDeployments(deploymentsPath, subPath, onlyABIAndAddress, expectedCh
     const deployPath = path.join(deploymentsPath, subPath);
     let filesStats;
     try {
-        filesStats = (0, exports.traverse)(deployPath, undefined, undefined, (name) => !name.startsWith('.') && name !== 'solcInputs');
+        filesStats = exports.traverse(deployPath, undefined, undefined, (name) => !name.startsWith('.') && name !== 'solcInputs');
     }
     catch (e) {
         // console.log('no folder at ' + deployPath);
@@ -292,7 +288,7 @@ function transformNamedAccounts(configNamedAccounts, chainIdGiven, accounts, net
                     }
                     else {
                         if (spec.slice(0, 2).toLowerCase() === '0x') {
-                            if (!(0, address_1.isAddress)(spec)) {
+                            if (!address_1.isAddress(spec)) {
                                 throw new Error(`"${spec}" is not a valid address, if you used to put privateKey there, use the "privatekey://" prefix instead`);
                             }
                             address = spec;
@@ -325,7 +321,7 @@ function transformNamedAccounts(configNamedAccounts, chainIdGiven, accounts, net
             }
             if (address) {
                 if (typeof address === 'string') {
-                    address = (0, address_1.getAddress)(address);
+                    address = address_1.getAddress(address);
                 }
             }
             return address;
@@ -345,7 +341,7 @@ function transformNamedAccounts(configNamedAccounts, chainIdGiven, accounts, net
     const unnamedAccounts = [];
     for (const address of accounts) {
         if (!usedAccounts[address.toLowerCase()]) {
-            unnamedAccounts.push((0, address_1.getAddress)(address));
+            unnamedAccounts.push(address_1.getAddress(address));
         }
     }
     return {
@@ -399,7 +395,7 @@ exports.processNamedAccounts = processNamedAccounts;
 function traverseMultipleDirectory(dirs) {
     const filepaths = [];
     for (const dir of dirs) {
-        let filesStats = (0, exports.traverse)(dir);
+        let filesStats = exports.traverse(dir);
         filesStats = filesStats.filter((v) => !v.directory);
         for (const filestat of filesStats) {
             filepaths.push(path.join(dir, filestat.relativePath));
@@ -423,7 +419,7 @@ const traverse = function (dir, result = [], topDir, filter // TODO any is Stats
             };
             if (fileStats.directory) {
                 result.push(fileStats);
-                return (0, exports.traverse)(fPath, result, topDir || dir, filter);
+                return exports.traverse(fPath, result, topDir || dir, filter);
             }
             result.push(fileStats);
         }

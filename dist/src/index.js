@@ -1,11 +1,7 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -38,7 +34,7 @@ const types = __importStar(require("hardhat/internal/core/params/argumentTypes")
 const task_names_1 = require("hardhat/builtin-tasks/task-names");
 const plugins_2 = require("hardhat/plugins");
 const debug_1 = __importDefault(require("debug"));
-const log = (0, debug_1.default)('hardhat:wighawag:hardhat-deploy');
+const log = debug_1.default('hardhat:wighawag:hardhat-deploy');
 const DeploymentsManager_1 = require("./DeploymentsManager");
 const chokidar_1 = __importDefault(require("chokidar"));
 const etherscan_1 = require("./etherscan");
@@ -77,7 +73,7 @@ function normalizePath(config, userPath, defaultPath) {
     }
     return userPath;
 }
-(0, config_1.extendConfig)((config, userConfig) => {
+config_1.extendConfig((config, userConfig) => {
     var _a, _b, _c;
     config.paths.deployments = normalizePath(config, (_a = userConfig.paths) === null || _a === void 0 ? void 0 : _a.deployments, 'deployments');
     config.paths.imports = normalizePath(config, (_b = userConfig.paths) === null || _b === void 0 ? void 0 : _b.imports, 'imports');
@@ -228,10 +224,10 @@ function networkFromConfig(env, network, companion) {
 }
 log('start...');
 let deploymentsManager;
-(0, config_1.extendEnvironment)((env) => {
+config_1.extendEnvironment((env) => {
     networkFromConfig(env, env.network, true);
     if (deploymentsManager === undefined || env.deployments === undefined) {
-        deploymentsManager = new DeploymentsManager_1.DeploymentsManager(env, (0, plugins_2.lazyObject)(() => env.network) // IMPORTANT, else other plugin cannot set env.network before end, like solidity-coverage does here in the coverage task :  https://github.com/sc-forks/solidity-coverage/blob/3c0f3a5c7db26e82974873bbf61cf462072a7c6d/plugins/resources/nomiclabs.utils.js#L93-L98
+        deploymentsManager = new DeploymentsManager_1.DeploymentsManager(env, plugins_2.lazyObject(() => env.network) // IMPORTANT, else other plugin cannot set env.network before end, like solidity-coverage does here in the coverage task :  https://github.com/sc-forks/solidity-coverage/blob/3c0f3a5c7db26e82974873bbf61cf462072a7c6d/plugins/resources/nomiclabs.utils.js#L93-L98
         );
         env.deployments = deploymentsManager.deploymentsExtension;
         env.getNamedAccounts =
@@ -259,7 +255,7 @@ let deploymentsManager;
                     getNamedAccounts: () => deploymentsManager.getNamedAccounts(),
                     getUnnamedAccounts: () => deploymentsManager.getUnnamedAccounts(),
                     getChainId: () => deploymentsManager.getChainId(),
-                    provider: (0, plugins_2.lazyObject)(() => env.network.provider),
+                    provider: plugins_2.lazyObject(() => env.network.provider),
                 };
                 env.companionNetworks[name] = extraNetwork;
                 continue;
@@ -272,7 +268,7 @@ let deploymentsManager;
             if (!network) {
                 throw new Error(`no network named ${networkName}`);
             }
-            network.provider = (0, construction_1.createProvider)(networkName, config, env.config.paths, env.artifacts);
+            network.provider = construction_1.createProvider(networkName, config, env.config.paths, env.artifacts);
             const networkDeploymentsManager = new DeploymentsManager_1.DeploymentsManager(env, network);
             deploymentsManager.addCompanionManager(name, networkDeploymentsManager);
             const extraNetwork = {
@@ -328,7 +324,7 @@ function setupExtraSolcSettings(settings) {
     // addIfNotPresent(settings.outputSelection["*"][""], "irOptimized");
     // addIfNotPresent(settings.outputSelection["*"][""], "ast");
 }
-(0, config_1.subtask)(exports.TASK_DEPLOY_RUN_DEPLOY, 'deploy run only')
+config_1.subtask(exports.TASK_DEPLOY_RUN_DEPLOY, 'deploy run only')
     .addOptionalParam('export', 'export current network deployments')
     .addOptionalParam('exportAll', 'export all deployments into one file')
     .addOptionalParam('tags', 'specify which deploy script to execute via tags, separated by commas', undefined, types.string)
@@ -361,7 +357,7 @@ function setupExtraSolcSettings(settings) {
         console.log(`total gas used: ${hre.deployments.getGasUsed()}`);
     }
 });
-(0, config_1.subtask)(exports.TASK_DEPLOY_MAIN, 'deploy')
+config_1.subtask(exports.TASK_DEPLOY_MAIN, 'deploy')
     .addOptionalParam('export', 'export current network deployments')
     .addOptionalParam('exportAll', 'export all deployments into one file')
     .addOptionalParam('tags', 'specify which deploy script to execute via tags, separated by commas', undefined, types.string)
@@ -388,7 +384,7 @@ function setupExtraSolcSettings(settings) {
     }
     let currentPromise = args.watchOnly ? null : compileAndDeploy();
     if (args.watch || args.watchOnly) {
-        const deployPaths = (0, utils_1.getDeployPaths)(hre.network);
+        const deployPaths = utils_1.getDeployPaths(hre.network);
         const watcher = chokidar_1.default.watch([hre.config.paths.sources, ...deployPaths], {
             ignored: /(^|[/\\])\../,
             persistent: true,
@@ -458,7 +454,7 @@ function setupExtraSolcSettings(settings) {
         return firstDeployments;
     }
 });
-(0, config_1.task)(task_names_1.TASK_TEST, 'Runs mocha tests')
+config_1.task(task_names_1.TASK_TEST, 'Runs mocha tests')
     .addFlag('deployFixture', 'run the global fixture before tests')
     .addFlag('noImpersonation', 'do not impersonate unknown accounts')
     .setAction(async (args, hre, runSuper) => {
@@ -478,7 +474,7 @@ function setupExtraSolcSettings(settings) {
         return runSuper(args);
     }
 });
-(0, config_1.task)(exports.TASK_DEPLOY, 'Deploy contracts')
+config_1.task(exports.TASK_DEPLOY, 'Deploy contracts')
     .addOptionalParam('export', 'export current network deployments')
     .addOptionalParam('exportAll', 'export all deployments into one file')
     .addOptionalParam('tags', 'specify which deploy script to execute via tags, separated by commas', undefined, types.string)
@@ -503,8 +499,8 @@ function setupExtraSolcSettings(settings) {
         hre.network.deploy = [
             normalizePath(hre.config, args.deployScripts, args.deployScripts),
         ];
-        if (globalStore_1.store.networks[(0, utils_1.getNetworkName)(hre.network)]) {
-            globalStore_1.store.networks[(0, utils_1.getNetworkName)(hre.network)].deploy = hre.network.deploy; // fallback to global store
+        if (globalStore_1.store.networks[utils_1.getNetworkName(hre.network)]) {
+            globalStore_1.store.networks[utils_1.getNetworkName(hre.network)].deploy = hre.network.deploy; // fallback to global store
         }
     }
     args.log = !args.silent;
@@ -515,7 +511,7 @@ function setupExtraSolcSettings(settings) {
     args.pendingtx = !isHardhatEVM(hre);
     await hre.run(exports.TASK_DEPLOY_MAIN, args);
 });
-(0, config_1.task)(exports.TASK_EXPORT, 'export contract deployment of the specified network into one file')
+config_1.task(exports.TASK_EXPORT, 'export contract deployment of the specified network into one file')
     .addOptionalParam('export', 'export current network deployments')
     .addOptionalParam('exportAll', 'export all deployments into one file')
     .setAction(async (args) => {
@@ -528,7 +524,7 @@ async function enableProviderLogging(provider, enabled) {
         params: [enabled],
     });
 }
-(0, config_1.task)(task_names_1.TASK_NODE, 'Starts a JSON-RPC server on top of Hardhat EVM')
+config_1.task(task_names_1.TASK_NODE, 'Starts a JSON-RPC server on top of Hardhat EVM')
     .addOptionalParam('export', 'export current network deployments')
     .addOptionalParam('exportAll', 'export all deployments into one file')
     .addOptionalParam('tags', 'specify which deploy script to execute via tags, separated by commas', undefined, types.string)
@@ -558,7 +554,7 @@ you can specifiy hardhat via "--network hardhat"
     // console.log('node', args);
     await runSuper(args);
 });
-(0, config_1.subtask)(task_names_1.TASK_NODE_GET_PROVIDER).setAction(async (args, hre, runSuper) => {
+config_1.subtask(task_names_1.TASK_NODE_GET_PROVIDER).setAction(async (args, hre, runSuper) => {
     const provider = await runSuper(args);
     if (!nodeTaskArgs.noReset) {
         await deploymentsManager.deletePreviousDeployments('localhost');
@@ -569,7 +565,7 @@ you can specifiy hardhat via "--network hardhat"
     }
     // console.log('enabling logging');
     await enableProviderLogging(provider, false);
-    const networkName = (0, utils_1.getNetworkName)(hre.network);
+    const networkName = utils_1.getNetworkName(hre.network);
     if (networkName !== hre.network.name) {
         console.log(`copying ${networkName}'s deployment to localhost...`);
         // copy existing deployment from specified netwotk into localhost deployment folder
@@ -582,13 +578,13 @@ you can specifiy hardhat via "--network hardhat"
     await enableProviderLogging(provider, true);
     return provider;
 });
-(0, config_1.subtask)(task_names_1.TASK_NODE_SERVER_READY).setAction(async (args, hre, runSuper) => {
+config_1.subtask(task_names_1.TASK_NODE_SERVER_READY).setAction(async (args, hre, runSuper) => {
     await runSuper(args);
     if (nodeTaskArgs.watch) {
         await hre.run(exports.TASK_DEPLOY_MAIN, Object.assign(Object.assign({}, nodeTaskArgs), { watchOnly: true, reset: false }));
     }
 });
-(0, config_1.task)(exports.TASK_ETHERSCAN_VERIFY, 'submit contract source code to etherscan')
+config_1.task(exports.TASK_ETHERSCAN_VERIFY, 'submit contract source code to etherscan')
     .addOptionalParam('apiKey', 'etherscan api key', undefined, types.string)
     .addOptionalParam('license', 'SPDX license (useful if SPDX is not listed in the sources), need to be supported by etherscan: https://etherscan.io/contract-license-types', undefined, types.string)
     .addOptionalParam('apiUrl', 'specify the url manually', undefined, types.string)
@@ -607,7 +603,7 @@ you can specifiy hardhat via "--network hardhat"
         throw new Error(`No Etherscan API KEY provided. Set it through command line option, in hardhat.config.ts, or by setting the "ETHERSCAN_API_KEY" env variable`);
     }
     const solcInputsPath = await deploymentsManager.getSolcInputPath();
-    await (0, etherscan_1.submitSources)(hre, solcInputsPath, {
+    await etherscan_1.submitSources(hre, solcInputsPath, {
         contractName: args.contractName,
         etherscanApiKey,
         license: args.license,
@@ -618,14 +614,14 @@ you can specifiy hardhat via "--network hardhat"
         writePostData: args.writePostData,
     });
 });
-(0, config_1.task)(exports.TASK_SOURCIFY, 'submit contract source code to sourcify (https://sourcify.dev)')
+config_1.task(exports.TASK_SOURCIFY, 'submit contract source code to sourcify (https://sourcify.dev)')
     .addOptionalParam('endpoint', 'endpoint url for sourcify', undefined, types.string)
     .addOptionalParam('contractName', 'specific contract name to verify', undefined, types.string)
     .addFlag('writeFailingMetadata', 'write to disk failing metadata for easy debugging')
     .setAction(async (args, hre) => {
-    await (0, sourcify_1.submitSourcesToSourcify)(hre, args);
+    await sourcify_1.submitSourcesToSourcify(hre, args);
 });
-(0, config_1.task)('export-artifacts')
+config_1.task('export-artifacts')
     .addPositionalParam('dest', 'destination folder where the extended artifacts files will be written to', undefined, types.string)
     .addFlag('solcInput', 'if set, artifacts will have an associated solcInput files (required for old version of solidity to ensure verifiability')
     .addOptionalParam('exclude', 'list of contract names separated by commas to exclude', undefined, types.string)
@@ -677,7 +673,7 @@ you can specifiy hardhat via "--network hardhat"
         extendedArtifact._format = undefined;
         if (args.solcInput) {
             const solcInput = JSON.stringify(buildInfo.input, null, '  ');
-            const solcInputHash = Buffer.from((0, murmur_128_1.default)(solcInput)).toString('hex');
+            const solcInputHash = Buffer.from(murmur_128_1.default(solcInput)).toString('hex');
             extendedArtifact.solcInput = solcInput;
             extendedArtifact.solcInputHash = solcInputHash;
         }
