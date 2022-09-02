@@ -2,7 +2,10 @@
   "name": "@holographxyz/hardhat-deploy-holographed",
   "version": "0.0.1",
   "description": "Hardhat Plugin For Replicable Deployments And Tests (Holographed)",
-  "repository": "github:cxip-labs/hardhat-deploy-holographed",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/holographxyz/hardhat-deploy-holographed.git"
+  },
   "author": "holographxyz",
   "license": "MIT",
   "publishConfig": {
