@@ -18,3 +18,5 @@ artifacts/
 .yalc
 yalc.lock
 .DS_Store
+
+.npmrc
