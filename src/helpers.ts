@@ -715,14 +715,18 @@ export function addHelpers(
     options = {...options}; // ensure no change
     await init();
     const deployFunction = () =>
-      _deployOne(name, {
-        ...options,
-        deterministicDeployment: true,
-        customDeterministicDeployment: true,
-        deterministicDeployerAddress: options.deployerAddress,
-        deterministicDeploymentSalt: options.saltHash,
-        deterministicDeploymentDeployCode: options.deployCode,
-      }, true);
+      _deployOne(
+        name,
+        {
+          ...options,
+          deterministicDeployment: true,
+          customDeterministicDeployment: true,
+          deterministicDeployerAddress: options.deployerAddress,
+          deterministicDeploymentSalt: options.saltHash,
+          deterministicDeploymentDeployCode: options.deployCode,
+        },
+        true
+      );
     const args: any[] = options.args ? [...options.args] : [];
     const {ethersSigner, unknown, address: from} = getFrom(options.from);
 
