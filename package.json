@@ -1,6 +1,6 @@
 {
   "name": "@holographxyz/hardhat-deploy-holographed",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Hardhat Plugin For Replicable Deployments And Tests (Holographed)",
   "repository": {
     "type": "git",
