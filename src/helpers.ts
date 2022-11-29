@@ -1,4 +1,4 @@
-declare var global: any;
+declare let global: any;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {Signer} from '@ethersproject/abstract-signer';
