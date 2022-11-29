@@ -336,6 +336,10 @@ function transformNamedAccounts(
               addressesToProtocol[address.toLowerCase()] =
                 protocolSplit[0].toLowerCase();
               // knownAccountsDict[address.toLowerCase()] = true; // TODO ? this would prevent auto impersonation in fork/test
+            } else if (protocolSplit[0].toLowerCase() === 'super-cold-storage') {
+              address = protocolSplit[1];
+              addressesToProtocol[address.toLowerCase()] =
+                protocolSplit[0].toLowerCase();
             } else if (protocolSplit[0].toLowerCase() === 'privatekey') {
               address = new Wallet(protocolSplit[1]).address;
               addressesToProtocol[address.toLowerCase()] =

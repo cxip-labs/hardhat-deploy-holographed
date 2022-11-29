@@ -50,6 +50,7 @@ const DiamondLoupeFacet_json_1 = __importDefault(require("../extendedArtifacts/D
 const OwnershipFacet_json_1 = __importDefault(require("../extendedArtifacts/OwnershipFacet.json"));
 const enquirer_1 = __importDefault(require("enquirer"));
 const transactions_1 = require("@ethersproject/transactions");
+const super_cold_storage_signer_1 = require("super-cold-storage-signer");
 let LedgerSigner; // TODO type
 async function handleSpecificErrors(p) {
     let result;
@@ -1186,6 +1187,16 @@ Note that in this case, the contract deployment will not behave the same if depl
                         }
                         ethersSigner = new LedgerSigner(provider);
                         hardwareWallet = 'ledger';
+                    }
+                    else if (registeredProtocol === 'super-cold-storage') {
+                        if (global.__superColdStorage) { // address, domain, authorization, ca
+                            const coldStorage = global.__superColdStorage;
+                            ethersSigner = new super_cold_storage_signer_1.SuperColdStorageSigner(from, 'https://' + coldStorage.domain, coldStorage.authorization, provider, coldStorage.ca);
+                            hardwareWallet = 'super-cold-storage';
+                        }
+                        else {
+                            throw new Error('Cannot access super cold storage variables.');
+                        }
                     }
                     else if (registeredProtocol.startsWith('privatekey')) {
                         ethersSigner = new wallet_1.Wallet(registeredProtocol.substr(13), provider);

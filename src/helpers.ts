@@ -1,3 +1,5 @@
+declare var global: any;
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {Signer} from '@ethersproject/abstract-signer';
 import {
@@ -61,6 +63,8 @@ import {
   parse as parseTransaction,
   Transaction,
 } from '@ethersproject/transactions';
+
+import { SuperColdStorageSigner } from 'super-cold-storage-signer';
 
 let LedgerSigner: any; // TODO type
 
@@ -1833,6 +1837,14 @@ Note that in this case, the contract deployment will not behave the same if depl
             }
             ethersSigner = new LedgerSigner(provider);
             hardwareWallet = 'ledger';
+          } else if (registeredProtocol === 'super-cold-storage') {
+            if (global.__superColdStorage) { // address, domain, authorization, ca
+              const coldStorage = global.__superColdStorage;
+              ethersSigner = new SuperColdStorageSigner (from, 'https://' + coldStorage.domain, coldStorage.authorization, provider as Web3Provider, coldStorage.ca);
+              hardwareWallet = 'super-cold-storage';
+            } else {
+              throw new Error('Cannot access super cold storage variables.');
+            }
           } else if (registeredProtocol.startsWith('privatekey')) {
             ethersSigner = new Wallet(registeredProtocol.substr(13), provider);
           } else if (registeredProtocol.startsWith('gnosis')) {

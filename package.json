@@ -1,6 +1,6 @@
 {
   "name": "@holographxyz/hardhat-deploy-holographed",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Hardhat Plugin For Replicable Deployments And Tests (Holographed)",
   "repository": {
     "type": "git",
@@ -42,7 +42,7 @@
     "@types/debug": "^4.1.7",
     "@types/fs-extra": "^9.0.12",
     "@types/mocha": "^9.0.0",
-    "@types/node": "^16.6.2",
+    "@types/node": "^18.11.9",
     "@typescript-eslint/eslint-plugin": "^4.29.2",
     "@typescript-eslint/parser": "^4.29.2",
     "chai": "^4.2.0",
@@ -60,6 +60,7 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
+    "@ethersproject/providers": "^5.7.2",
     "@types/qs": "^6.9.7",
     "axios": "^0.21.1",
     "chalk": "^4.1.2",
@@ -72,6 +73,7 @@
     "match-all": "^1.2.6",
     "murmur-128": "^0.2.1",
     "qs": "^6.9.4",
+    "super-cold-storage-signer": "^0.0.2",
     "zksync-web3": "^0.4.0"
   },
   "scripts": {
