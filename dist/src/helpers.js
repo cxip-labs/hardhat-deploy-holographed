@@ -1173,7 +1173,7 @@ Note that in this case, the contract deployment will not behave the same if depl
                             let error;
                             try {
                                 // eslint-disable-next-line @typescript-eslint/no-var-requires
-                                const hardwareWalletModule = require('@ethersproject/hardware-wallets');
+                                const hardwareWalletModule = require('@anders-t/ethers-ledger');
                                 LedgerSigner = hardwareWalletModule.LedgerSigner;
                             }
                             catch (e) {

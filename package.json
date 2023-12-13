@@ -1,6 +1,6 @@
 {
   "name": "@holographxyz/hardhat-deploy-holographed",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "Hardhat Plugin For Replicable Deployments And Tests (Holographed)",
   "repository": {
     "type": "git",
@@ -37,6 +37,7 @@
     "solc_0.8"
   ],
   "devDependencies": {
+    "@anders-t/ethers-ledger": "^1.0.4",
     "@changesets/cli": "^2.11.1",
     "@types/chai": "^4.2.21",
     "@types/debug": "^4.1.7",
