@@ -73,7 +73,6 @@
     "match-all": "^1.2.6",
     "murmur-128": "^0.2.1",
     "qs": "^6.9.4",
-    "super-cold-storage-signer": "^0.0.2",
     "zksync-web3": "^0.4.0"
   },
   "scripts": {
