@@ -50,8 +50,14 @@ const DiamondLoupeFacet_json_1 = __importDefault(require("../extendedArtifacts/D
 const OwnershipFacet_json_1 = __importDefault(require("../extendedArtifacts/OwnershipFacet.json"));
 const enquirer_1 = __importDefault(require("enquirer"));
 const transactions_1 = require("@ethersproject/transactions");
-const super_cold_storage_signer_1 = require("super-cold-storage-signer");
+// NOTE: Signers are setup as global so that they can be resused throughout deployment functions without having to refech them
+//       This is especially important for hardware wallets, as trying to reopen a device connection can result in unexpected behavior and errors
 let LedgerSigner; // TODO type
+let ethersSigner;
+let wallet;
+let hardwareWallet = undefined;
+let unknown = false;
+let signerHasBeenSet = false;
 async function handleSpecificErrors(p) {
     let result;
     try {
@@ -1135,10 +1141,10 @@ Note that in this case, the contract deployment will not behave the same if depl
         return getFrom(from);
     }
     function getFrom(from) {
-        let ethersSigner;
-        let wallet;
-        let hardwareWallet = undefined;
-        let unknown = false;
+        // The signer should only be fetched once
+        if (signerHasBeenSet && ethersSigner) {
+            return { address: from, ethersSigner, hardwareWallet, unknown };
+        }
         if (from.length >= 64) {
             if (from.length === 64) {
                 from = '0x' + from;
@@ -1167,7 +1173,7 @@ Note that in this case, the contract deployment will not behave the same if depl
                             let error;
                             try {
                                 // eslint-disable-next-line @typescript-eslint/no-var-requires
-                                const hardwareWalletModule = require('@ethersproject/hardware-wallets');
+                                const hardwareWalletModule = require('@anders-t/ethers-ledger');
                                 LedgerSigner = hardwareWalletModule.LedgerSigner;
                             }
                             catch (e) {
@@ -1188,16 +1194,6 @@ Note that in this case, the contract deployment will not behave the same if depl
                         ethersSigner = new LedgerSigner(provider);
                         hardwareWallet = 'ledger';
                     }
-                    else if (registeredProtocol === 'super-cold-storage') {
-                        if (global.__superColdStorage) { // address, domain, authorization, ca
-                            const coldStorage = global.__superColdStorage;
-                            ethersSigner = new super_cold_storage_signer_1.SuperColdStorageSigner(from, 'https://' + coldStorage.domain, coldStorage.authorization, provider, coldStorage.ca);
-                            hardwareWallet = 'super-cold-storage';
-                        }
-                        else {
-                            throw new Error('Cannot access super cold storage variables.');
-                        }
-                    }
                     else if (registeredProtocol.startsWith('privatekey')) {
                         ethersSigner = new wallet_1.Wallet(registeredProtocol.substr(13), provider);
                     }
@@ -1211,6 +1207,7 @@ Note that in this case, the contract deployment will not behave the same if depl
             unknown = true;
             ethersSigner = provider.getSigner(from);
         }
+        signerHasBeenSet = true;
         return { address: from, ethersSigner, hardwareWallet, unknown };
     }
     // async function findEvents(contract: Contract, event: string, blockHash: string): Promise<any[]> {
